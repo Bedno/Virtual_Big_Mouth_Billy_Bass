@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Virtual Big Mouthed Billy Bass</title>
+</head>
+<script>
+// Virtual Big Mouthed Bill Bass
+// Initial exploration of web-based possibilities for creation of a text-to-speech talking animated character.
+// Speaks entered text while animating mouth and tail in sync.
+// For more info see: https://github.com/bedno/Virtual_Big_Mouth_Billy_Bass
+// Live demo at https://bedno.com/vbmbb
+// Next to do's:
+// 1. Create actual graphics for frame images.
+// 2. Copy spoken weather code from https://github.com/Bedno/InfoWall
+
+var SpeechTxt = "";  var TailNextIdx = 0;
+var TimerMouth = null;  var TimerTail = null;
+function UpdMouth() {
+  var MouthChar = document.getElementById('CharMouth').innerText;
+  if (MouthChar == '>') {
+    MouthChar = '=';
+    if (TimerMouth) { clearTimeout(TimerMouth); }
+    TimerMouth = setTimeout('UpdMouth()',150);
+  } else {
+    MouthChar = '-';
+  }
+  document.getElementById('CharMouth').innerText = MouthChar;
+}
+function ActMouth() {
+  document.getElementById('CharMouth').innerText = '>';
+  if (TimerMouth) { clearTimeout(TimerMouth); }
+  TimerMouth = setTimeout('UpdMouth()',150);
+}
+function UpdTail() {
+  document.getElementById('CharTail').innerText = '[';
+}
+function ActTail() {
+  document.getElementById('CharTail').innerText = '<';
+  if (TimerTail) { clearTimeout(TimerTail); }
+  TimerTail = setTimeout('UpdTail()',150);
+}
+function SpeechLog(SLin) {
+  document.getElementById('SpeechConsole').innerHTML = SLin+document.getElementById('SpeechConsole').innerHTML;
+}
+function SpeechDone(SpeechEvent) {
+  SpeechLog('Finished in '+(Math.round((SpeechEvent.elapsedTime/100))/10).toString()+" seconds.\n");
+};
+function SpeechWord(SpeechEvent) {
+  ActMouth();
+  if (SpeechEvent.charIndex>TailNextIdx) { ActTail(); TailNextIdx += 20; }
+  SpeechLog(SpeechEvent.name+':'+SpeechEvent.charIndex+"\n");
+};
+function SpeechDo () {
+  SpeechTxt = document.getElementById('SpeechText').value;
+  TailNextIdx = SpeechTxt.length/2;  if (TailNextIdx>30) { TailNextIdx = 30; }
+  if ('speechSynthesis' in window) {  // If browser is speech capable
+    var SpeechVoices = window.speechSynthesis.getVoices();
+    window.speechSynthesis.cancel();  // Cancel any existing speaking
+    var SpeechHandle = new SpeechSynthesisUtterance();  // Initialize a speech handle
+    SpeechHandle.voice = SpeechVoices[0];  // Select voice and other settings.
+    SpeechHandle.voiceURI = 'native';
+    SpeechHandle.volume = 1.0; // 0 to 1
+    SpeechHandle.rate = 1.0; // 0.1 to 10
+    SpeechHandle.pitch = 1.0; // 0 to 2
+    SpeechHandle.lang = 'en-US';
+    SpeechHandle.text = SpeechTxt;
+    // Connect the completion callback.
+    SpeechHandle.onend = SpeechDone;
+    // Connect the word boundary callback.
+    SpeechHandle.onboundary = SpeechWord;
+    // Speak the passed phrase.
+    window.speechSynthesis.speak(SpeechHandle);
+  } else {
+    SpeechLog("This device does not support text to speech.\n");
+  }
+}
+
+</script>
+<body><font face="Arial" size=2>
+<center><br><br>
+<font size=3><a href="https://github.com/bedno/Virtual_Big_Mouth_Billy_Bass" target="github">Virtual Big Mouth Billy Bass</a><br></font>
+<font size=1>Initial exploration of web-based possibilities.<br><br></font>
+<font size=9><span id="CharMouth">-</span>:<span id="CharTail">[</span></font><br><br>
+<textarea rows="3" cols="76" name='SpeechText' id='SpeechText'>
+To be, or not to be, that is the question:
+Whether 'tis nobler in the mind to suffer
+The slings and arrows of outrageous fortune,
+Or to take arms against a sea of troubles
+And by opposing end them. To die—to sleep,
+No more; and by a sleep to say we end
+The heart-ache and the thousand natural shocks
+That flesh is heir to: 'tis a consummation
+Devoutly to be wish'd.
+</textarea><br>
+<input type="button" onClick="SpeechDo();" value="SPEAK">
+
+<div id="SpeechConsole" style="height:92px; width:600px; overflow:hidden;"></div><br><br>
+
+</br></center>
+</font></body>
+</html>
+
