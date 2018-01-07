@@ -5,7 +5,7 @@ These days however, would could skip the hardware and simulate the entire experi
 
 Though talking parrot apps were around since late 80s and Max Headroom, and virtual newscasters were a thing by the late 90s, in recent searches on the topic I was unable to find any modern examples.
 
-I case an open source generalized simple talking animated character framework does not yet exist, I hearby establish this space as a place to spread notes on the idea.
+In case an open source generalized simple talking animated character framework does not yet exist, I hearby establish this space as a place to spread notes on the idea.
 
 IDEAS:
 
