@@ -1,3 +1,9 @@
+Live demo now running at https://bedno.com/vbmbb
+Next to do's:
+ 1. Create actual graphics for frame images.
+ 2. Copy spoken weather code from https://github.com/Bedno/InfoWall
+
+~~~~~~~~~~~~~~~~~~
 Seeding a repository for planned recreational coding project of developing a *Virtual* Big Mouth Bill Bass.
 
 Modifying the popular "Big Mouth Billy Bass" toy to speak from external inputs has been a standard hacking project for decades.
