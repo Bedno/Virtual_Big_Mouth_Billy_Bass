@@ -1,4 +1,5 @@
-Live demo now running at https://bedno.com/vbmbb
+Live demo now running at http://VirtualBillyBass.com
+
 Next to do's:
  1. Create actual graphics for frame images.
  2. Copy spoken weather code from https://github.com/Bedno/InfoWall
