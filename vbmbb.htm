@@ -1,64 +1,70 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
+<meta name='keywords' content='Virtual Big Mouth Billy Bass'>
+<meta name="description" content="Virtual Big Mouth Billy Bass">
+<link rel='shortcut icon' href='https://bedno.com/g/vbmbb/vbmbb-icon.ico'>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta property="og:title" content="VirtualBillyBass.com">
+<meta property="og:description" content="Virtual Billy Bass : Text-to-speech talking animated character.">
+<meta property="og:image" content="https://bedno.com/g/vbmbb/VirtualBillyBass.png">
+<meta property="og:url" content="http://VirtualBillyBass.com">
+<meta property="og:site_name" content="VirtualBillyBass.com">
 <head>
 <title>Virtual Big Mouthed Billy Bass</title>
 </head>
 <script>
+
 // Basic web-based text-to-speech talking animated character.  http://VirtualBillyBass.com
 // More info at https://github.com/bedno/Virtual_Big_Mouth_Billy_Bass
 var SpeechTxt = "";  var TailNextIdx = 0;
-var TimerMouth = null;  var TimerTail = null;
+var TimerMouth = null;  var TimerTail = null;  var SeqMouth = 0;  var SeqTail = 0;
+var SpeechVoices = null;  var SpeechHandle = null;
+
 function UpdMouth() {
-  var MouthChar = document.getElementById('CharMouth').innerText;
-  if (MouthChar == '>') {
-    MouthChar = '=';
+  if (SeqMouth == 2) {
+    SeqMouth = 1;
     if (TimerMouth) { clearTimeout(TimerMouth); }
-    TimerMouth = setTimeout('UpdMouth()',150);
+    TimerMouth = setTimeout('UpdMouth()',250);
   } else {
+    SeqMouth = 0;
     MouthChar = '-';
   }
-  document.getElementById('CharMouth').innerText = MouthChar;
+  document.getElementById('ImgMouth').src = "https://bedno.com/g/vbmbb/mouth-"+SeqMouth.toString()+".png";
 }
 function ActMouth() {
-  document.getElementById('CharMouth').innerText = '>';
+  SeqMouth = 2;
+  document.getElementById('ImgMouth').src = "https://bedno.com/g/vbmbb/mouth-"+SeqMouth.toString()+".png";
   if (TimerMouth) { clearTimeout(TimerMouth); }
-  TimerMouth = setTimeout('UpdMouth()',150);
+  TimerMouth = setTimeout('UpdMouth()',250);
 }
 function UpdTail() {
-  document.getElementById('CharTail').innerText = '[';
+  SeqTail = 0;
+  document.getElementById('ImgTail').src = "https://bedno.com/g/vbmbb/tail-"+SeqTail.toString()+".png";
 }
 function ActTail() {
-  document.getElementById('CharTail').innerText = '<';
+  SeqTail = 1;
+  document.getElementById('ImgTail').src = "https://bedno.com/g/vbmbb/tail-"+SeqTail.toString()+".png";
   if (TimerTail) { clearTimeout(TimerTail); }
-  TimerTail = setTimeout('UpdTail()',350);
+  TimerTail = setTimeout('UpdTail()',400);
 }
 function SpeechLog(SLin) {
-  document.getElementById('SpeechConsole').innerHTML = SLin+document.getElementById('SpeechConsole').innerHTML;
+  // <div id="SpeechConsole" style="height:92px; width:340px; overflow:hidden; font-size:7pt; color:gray;"></div><br><br>
+  // document.getElementById('SpeechConsole').innerHTML = SLin+document.getElementById('SpeechConsole').innerHTML;
 }
 function SpeechDone(SpeechEvent) {
   SpeechLog('Finished in '+(Math.round((SpeechEvent.elapsedTime/100))/10).toString()+" seconds.\n");
 };
 function SpeechWord(SpeechEvent) {
   ActMouth();
-  if (SpeechEvent.charIndex>TailNextIdx) { ActTail(); TailNextIdx += 20+Math.floor(Math.random()*20); }
+  if (SpeechEvent.charIndex>TailNextIdx) { ActTail(); TailNextIdx += 12+Math.floor(Math.random()*18); }
   SpeechLog(SpeechEvent.name+':'+SpeechEvent.charIndex+"\n");
 };
 function SpeechDo () {
-  SpeechTxt = document.getElementById('SpeechText').value;
-  TailNextIdx = SpeechTxt.length/2;  if (TailNextIdx>22) { TailNextIdx = 20+Math.floor(Math.random()*20); }
+  TailNextIdx = SpeechTxt.length/2;  if (TailNextIdx>22) { TailNextIdx = 12+Math.floor(Math.random()*18); }
   if ('speechSynthesis' in window) {  // If browser is speech capable
-    var SpeechVoices = window.speechSynthesis.getVoices();
     window.speechSynthesis.cancel();  // Cancel any existing speaking
-    var SpeechHandle = new SpeechSynthesisUtterance();  // Initialize a speech handle
-    SpeechHandle.voice = SpeechVoices[10];  // Select voice and other settings.
-    SpeechHandle.voiceURI = 'native';
-    SpeechHandle.volume = 1.0; // 0 to 1
-    SpeechHandle.rate = 1.0; // 0.1 to 10
-    SpeechHandle.pitch = 1.0; // 0 to 2
-    SpeechHandle.lang = 'en-US';
     SpeechHandle.text = SpeechTxt;
     // Connect the completion callback.
     SpeechHandle.onend = SpeechDone;
@@ -71,28 +77,264 @@ function SpeechDo () {
   }
 }
 
+function SpeakSong () {
+  SpeechTxt = "I wanna know, can you tell me?\n";
+  SpeechTxt += "I'd love to stay\n";
+  SpeechTxt += "Take me to the river, drop me in the water\n";
+  SpeechTxt += "Take me to the river, drop me in the water\n";
+  SpeechDo();
+}
+
+if ('speechSynthesis' in window) {  // If browser is speech capable
+  SpeechVoices = window.speechSynthesis.getVoices();
+  SpeechHandle = new SpeechSynthesisUtterance();  // Initialize a speech handle
+  SpeechHandle.voice = SpeechVoices[10];  // Select voice and other settings.
+  SpeechHandle.voiceURI = 'native';
+  SpeechHandle.volume = 1.0; // 0 to 1
+  SpeechHandle.rate = 1.0; // 0.1 to 10
+  SpeechHandle.pitch = 1.0; // 0 to 2
+  SpeechHandle.lang = 'en-US';
+}
+
+// WEATHER fetch and prepare...
+var WeatherCurrentSpoken = "";
+var WeatherForecastSpoken = "";
+var WeatherForecastURL = 'https://bedno.com/bike/d/w/wz-chicago-more.json';  // http://api.wunderground.com/api/<api_key>/forecast/pws/q/pws:KILCHICA173.json
+var WeatherCurrentURL = 'https://bedno.com/bike/d/w/wz-chicago-now.json';  // http://api.wunderground.com/api/<api_key>/conditions/pws/q/pws:KILCHICA173.json
+function UnqSec () {
+  var Udt=new Date();
+  return('?'+Udt.getYear().toString()+''+Udt.getMonth().toString()+''+Udt.getDate().toString()+''+Udt.getHours().toString()+''+Udt.getMinutes().toString()+''+Udt.getSeconds().toString()+'');
+}
+
+// Return a completely ready to speak time/weather message.
+function SpokenForecast () {
+  var SFstr = "";
+  if ('speechSynthesis' in window) {
+    var SpkDT=new Date();
+    var SpkHr = 0;
+    SpkHr = SpkDT.getHours();
+    if (SpkHr>12) SpkHr = SpkHr-12;  if (SpkHr==0) SpkHr = 12;
+    var SpkMn = "";
+    if (SpkDT.getMinutes()>0) {
+      SpkMn = SpkDT.getMinutes().toString();
+      if (SpkMn.length<2) SpkMn = " O "+SpkMn;
+    }
+    if (WeatherCurrentSpoken.length>4) {
+      if (WeatherForecastSpoken.length>4) {
+        SFstr = "In Chicago at "+SpkHr.toString()+" "+SpkMn+" its "+WeatherCurrentSpoken.toUpperCase()+" "+WeatherForecastSpoken.replace(/^[^\s]+\ /,'FORECASTING ');
+      } else {
+        SFstr = "In Chicago at "+SpkHr.toString()+" "+SpkMn+" its "+WeatherCurrentSpoken.toUpperCase();
+      }
+    } else {
+      if (WeatherForecastSpoken.length>4) {
+        SFstr = WeatherForecastSpoken.replace(/^[^\s]+\ /,'Forecasting ');
+      }
+    }
+  }
+  SpeechLog('Ready to speak: "'+SFstr+'"'+"<br>\n");
+  return(SFstr);
+}
+
+function SpeakWeather () {
+  SpeechTxt = SpokenForecast();
+  SpeechDo();
+}
+
+function SpeakFortune () {
+  var Fortunes = new Array('It is certain', 'It is decidedly so', 'Without a doubt', 'Yes definitely', 'You may rely on it', 'As I see it, yes', 'Most likely', 'Outlook good', 'Yes', 'Signs point to yes', 'Reply hazy try again', 'Ask again later', 'Better not tell you now', 'Cannot predict now', 'Concentrate and ask again', 'Do not count on it', 'My reply is no', 'My sources say no', 'Outlook not so good', 'Very doubtful');
+  var FortuneIdx = Math.floor(Math.random()*(Fortunes.length+1));
+  SpeechTxt = "Consulting a virtual magic eight ball the universe reveals your answer as...\n\n";
+  SpeechTxt += Fortunes[FortuneIdx];
+  SpeechDo();
+}
+
+// Asynchronous receive and parse of JSON response to weather forecast query (on capable browsers).  Current supports only Wunderground.com format.
+var WeatherForecastHandle = 0;
+function FmtMinus (FMin) {
+  return(Math.floor(FMin).toString().replace(/-([0-9]+)/gi,"<span style='font-size:80%; vertical-align:40%;'>-</span>$1"));
+}
+function SpokenMinus (FMin) {
+  return(Math.floor(FMin).toString().replace(/-([0-9]+)/gi,"minus $1"));
+}
+function WeatherForecastReceive () {
+  WeatherForecastSpoken = "";
+  if ( (WeatherForecastHandle.readyState==4) && (WeatherForecastHandle.status==200) ) {
+    var FWFread = WeatherForecastHandle.responseText;
+    try {
+      var FWFrec = JSON.parse(FWFread);
+      FWFrec['forecast']['simpleforecast']['forecastday'][0]['low']['fahrenheit'] = Math.floor(FWFrec['forecast']['simpleforecast']['forecastday'][0]['low']['fahrenheit']);
+      FWFrec['forecast']['simpleforecast']['forecastday'][0]['high']['fahrenheit'] = Math.floor(FWFrec['forecast']['simpleforecast']['forecastday'][0]['high']['fahrenheit']);
+      WeatherForecastSpoken = FWFrec['forecast']['simpleforecast']['forecastday'][0]['date']['weekday']+" ";
+      WeatherForecastSpoken += FWFrec['forecast']['simpleforecast']['forecastday'][0]['low']['fahrenheit']+" to "+FWFrec['forecast']['simpleforecast']['forecastday'][0]['high']['fahrenheit']+". ";
+      WeatherForecastSpoken += FWFrec['forecast']['txt_forecast']['forecastday'][0]['fcttext'];
+      WeatherForecastSpoken = WeatherForecastSpoken.toUpperCase();
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/\.[0-9]+/gi,"");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([0-9])s([^A-Z0-9])/gi,"$1's$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([0-9])F/gi,"$1");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])E([^A-Z0-9])/gi,"$1EAST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])W([^A-Z0-9])/gi,"$1WEST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])N([^A-Z0-9])/gi,"$1NORTH$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])S([^A-Z0-9])/gi,"$1SOUTH$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])NE([^A-Z0-9])/gi,"$1NORTHEAST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])SE([^A-Z0-9])/gi,"$1SOUTHEAST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])SW([^A-Z0-9])/gi,"$1SOUTHWEST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])NW([^A-Z0-9])/gi,"$1NORTHWEST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])NNE([^A-Z0-9])/gi,"$1NORTHEAST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])ENE([^A-Z0-9])/gi,"$1NORTHEAST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])ESE([^A-Z0-9])/gi,"$1SOUTHEAST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])SSE([^A-Z0-9])/gi,"$1SOUTHEAST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])SSW([^A-Z0-9])/gi,"$1SOUTHWEST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])WSW([^A-Z0-9])/gi,"$1SOUTHWEST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])WNW([^A-Z0-9])/gi,"$1NORTHWEST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])NNW([^A-Z0-9])/gi,"$1NORTHWEST$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z0-9\.\-'\,])PRECIP([^A-Z0-9])/gi,"$1PRECIPITATION$2");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/MPH/gi,"");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/WIND/gi,"WEND");
+      WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z])\./gi,"$1; \n");
+      SpeechLog('Weather Forecast received: '+WeatherForecastSpoken+"<br>\n");
+    } catch (err) { SpeechLog('Weather Forecast received error: '+err+"<br>\n"); }
+  }
+  if ( (WeatherCurrentSpoken.length>4) && (WeatherForecastSpoken.length>4) ) { SpeakWeather(); }
+}
+
+// Request weather forecast on capable browsers.
+function WeatherForecastRequest () {
+  var WFout = "";
+  try {
+    WeatherForecastHandle = new XMLHttpRequest();
+  } catch (trymicrosoft) {
+    try {
+      WeatherForecastHandle = new ActiveXObject('Msxml2.XMLHTTP');
+    } catch (othermicrosoft) {
+      try {
+        WeatherForecastHandle = new ActiveXObject('Microsoft.XMLHTTP');
+      } catch (failed) {
+        WeatherForecastHandle = false;
+      }
+    }
+  }
+  if (WeatherForecastHandle) {
+    try {
+      if (WeatherForecastURL.length>1) {
+        WeatherForecastHandle.open('GET', WeatherForecastURL+'?'+UnqSec(), true);
+        WeatherForecastHandle.timeout = 20000;
+        WeatherForecastHandle.onreadystatechange = WeatherForecastReceive;
+        WeatherForecastHandle.send(null);
+      }
+    } catch (err) { SpeechLog('Weather Forecast request error: '+err+"<br>\n"); }
+  }
+}
+
+// Asynchronous receive and parse of JSON response to weather current conditions query (on capable browsers).  Current supports only Wunderground.com format.
+var WeatherCurrentHandle = false;
+function WeatherCurrentReceive () {
+  var WeatherCurrentSpokenTmp = "";
+  if ( (WeatherCurrentHandle.readyState==4) && (WeatherCurrentHandle.status==200) ) {
+    var FWCread = WeatherCurrentHandle.responseText;
+    try {
+      var FWCrec = JSON.parse(FWCread);
+      WeatherCurrentSpokenTmp += SpokenMinus(FWCrec['current_observation']['temp_f'])+", ";
+      if (FWCrec['current_observation']['weather'].length>1) {
+        WeatherCurrentSpokenTmp += FWCrec['current_observation']['weather']+", "
+      }
+      FWCrec['current_observation']['wind_mph'] = Math.floor(FWCrec['current_observation']['wind_mph']);
+      FWCrec['current_observation']['wind_gust_mph'] = Math.floor(FWCrec['current_observation']['wind_gust_mph']);
+      if ( (FWCrec['current_observation']['wind_mph']>2) || (FWCrec['current_observation']['wind_gust_mph']>2) ) {
+        WeatherCurrentSpokenTmp += ", ";
+        if (FWCrec['current_observation']['wind_dir'].length<1) {
+          WeatherCurrentSpokenTmp += "variable ";
+        } else {
+          WeatherCurrentSpokenTmp += FWCrec['current_observation']['wind_dir']+" ";
+          WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/([^A-Z0-9])NE([^A-Z0-9])/gi,"$1NorthEast$2");
+          WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/([^A-Z0-9])NNE([^A-Z0-9])/gi,"$1NorthEast$2");
+          WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/([^A-Z0-9])ENE([^A-Z0-9])/gi,"$1NorthEast$2");
+          WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/([^A-Z0-9])ESE([^A-Z0-9])/gi,"$1SouthEast$2");
+          WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/([^A-Z0-9])SE([^A-Z0-9])/gi,"$1SouthEast$2");
+          WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/([^A-Z0-9])SSE([^A-Z0-9])/gi,"$1SouthEast$2");
+          WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/([^A-Z0-9])SW([^A-Z0-9])/gi,"$1SouthWest$2");
+          WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/([^A-Z0-9])SSW([^A-Z0-9])/gi,"$1SouthWest$2");
+          WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/([^A-Z0-9])WSW([^A-Z0-9])/gi,"$1SouthWest$2");
+          WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/([^A-Z0-9])NW([^A-Z0-9])/gi,"$1NorthWest$2");
+          WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/([^A-Z0-9])WNW([^A-Z0-9])/gi,"$1NorthWest$2");
+          WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/([^A-Z0-9])NNW([^A-Z0-9])/gi,"$1NorthWest$2");
+        }
+        if (FWCrec['current_observation']['wind_mph']<=2) {
+          WeatherCurrentSpokenTmp += "gusting at "+FWCrec['current_observation']['wind_gust_mph'];
+        } else {
+          WeatherCurrentSpokenTmp += "at "+FWCrec['current_observation']['wind_mph'];
+          if ( (FWCrec['current_observation']['wind_gust_mph']>2) && ((FWCrec['current_observation']['wind_gust_mph']-FWCrec['current_observation']['wind_mph'])>1) ) {
+            WeatherCurrentSpokenTmp += " to "+FWCrec['current_observation']['wind_gust_mph'];
+          }
+        }
+      }
+      if ( (FWCrec['current_observation']['windchill_f']!="") && (FWCrec['current_observation']['windchill_f']!="NA") && (FWCrec['current_observation']['windchill_f']!="N/A") && (FWCrec['current_observation']['windchill_f']!="null") && (FWCrec['current_observation']['windchill_f']!="undefined") &&
+           (Math.abs(FWCrec['current_observation']['temp_f']-FWCrec['current_observation']['windchill_f'])>4) ) {
+        WeatherCurrentSpokenTmp += ", feels like "+SpokenMinus(FWCrec['current_observation']['windchill_f']);
+      } else {
+        if ( (FWCrec['current_observation']['heat_index_f']!="") && (FWCrec['current_observation']['heat_index_f']!="NA") && (FWCrec['current_observation']['heat_index_f']!="N/A") && (FWCrec['current_observation']['heat_index_f']!="null") && (FWCrec['current_observation']['heat_index_f']!="undefined") &&
+             (Math.abs(FWCrec['current_observation']['temp_f']-FWCrec['current_observation']['heat_index_f'])>4) ) {
+          WeatherCurrentSpokenTmp += ", feels like "+SpokenMinus(FWCrec['current_observation']['heat_index_f']);
+        }
+      }
+      var FWhum = FWCrec['current_observation']['relative_humidity'].replace('%','');
+      if ( (FWhum>1) && (FWhum<120) ) { WeatherCurrentSpokenTmp += ", humidity "+FWhum.toString()+" percent"; }
+      WeatherCurrentSpokenTmp += ".";
+      WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/\.[0-9]+/g,'');
+    } catch (err) { SpeechLog('Weather Current receive error: '+err+"<br>\n"); }
+  }
+  WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/^[\s]+/gi,"");
+  WeatherCurrentSpokenTmp = WeatherCurrentSpokenTmp.replace(/[\s]+$/gi,"");
+  if (WeatherCurrentSpokenTmp.length > 4) {
+    WeatherCurrentSpoken = WeatherCurrentSpokenTmp;
+  }
+  SpeechLog('Weather Current received: '+WeatherForecastSpoken+"<br>\n");
+  if ( (WeatherCurrentSpoken.length>4) && (WeatherForecastSpoken.length>4) ) { SpeakWeather(); }
+}
+// Request weather current conditions on capable browsers.
+function WeatherCurrentRequest () {
+  try {
+    WeatherCurrentHandle = new XMLHttpRequest();
+  } catch (trymicrosoft) {
+    try {
+      WeatherCurrentHandle = new ActiveXObject('Msxml2.XMLHTTP');
+    } catch (othermicrosoft) {
+      try {
+        WeatherCurrentHandle = new ActiveXObject('Microsoft.XMLHTTP');
+      } catch (failed) {
+        WeatherCurrentHandle = false;
+      }
+    }
+  }
+  if (WeatherCurrentHandle) {
+    try {
+      if (WeatherCurrentURL.length>1) {
+        WeatherCurrentHandle.open('GET', WeatherCurrentURL+'?'+UnqSec(), true);
+        WeatherCurrentHandle.timeout = 20000;
+        WeatherCurrentHandle.onreadystatechange = WeatherCurrentReceive;
+        WeatherCurrentHandle.send(null);
+      }
+    } catch (err) { SpeechLog('Weather Current request error: '+err+"<br>\n"); }
+  }
+}
+
+function WeatherSync () {
+  WeatherCurrentRequest();
+  WeatherForecastRequest();
+  setTimeout('WeatherSync()', 10*60*1000);  // Refresh wather every ten minutes.
+}
+
 </script>
-<body><font face="Arial" size=2>
-<center><br><br>
-<font size=3><a href="http://VirtualBillyBass.com">Virtual Big Mouth Billy Bass</a><br></font>
-<span onClick="SpeechDo();"><font size="9" color="#0000C0"><span id="CharMouth">-</span>:<span id="CharTail">[</span></font></span><br>
-<input type="button" onClick="SpeechDo();" value="SPEAK"><br>
-<textarea rows="3" cols="32" name='SpeechText' id='SpeechText'>
-I wanna know, can you tell me?
-I'd love to stay
-Take me to the river, drop me in the water
-Take me to the river, drop me in the water
-</textarea><br>
+<body onLoad="WeatherSync();"><font face="Arial" size=2>
+<center>
+<br><font size=2><a href="http://VirtualBillyBass.com">VirtualBillyBass.com</a><br></font>
+<nobr><img id="ImgMouth" src="https://bedno.com/g/vbmbb/mouth-0.png" border=0 width="144" height="144"><img id="ImgTail" src="https://bedno.com/g/vbmbb/tail-0.png" border=0 width="144" height="144"></nobr><br>
 
-<font size=1>
-Initial exploration of web-based possibilities for creation of a text-to-speech talking animated character.<br>
-Speaks entered text while animating mouth, head and tail in sync.  Version 0.1, symbols represent body parts.<br>
-Next to do's:  1. Create actual graphics for frame images.  2. Speak a fetched weather report.<br>
-More info: <a href="https://github.com/bedno/Virtual_Big_Mouth_Billy_Bass" target="github">https://github.com/bedno/Virtual_Big_Mouth_Billy_Bass</a><br>
-</font>
-<br><br>
+<span onClick="SpeakWeather();" style="color:#000000; background-color:orange; font-family:Helvetica, Arial; text-decoration:bold; font-size:12pt;">Weather</span> &nbsp;&nbsp;
+<span onClick="SpeakFortune();" style="color:#000000; background-color:orange; font-family:Helvetica, Arial; text-decoration:bold; font-size:12pt;">Fortune</span> &nbsp;&nbsp;
+<span onClick="SpeakSong();" style="color:#000000; background-color:orange; font-family:Helvetica, Arial; text-decoration:bold; font-size:12pt;">Song</span><br><br>
 
-<div id="SpeechConsole" style="height:92px; width:600px; overflow:hidden; font-size:7pt; color:white;"></div><br><br>
+<font size=2><a href="http://VirtualBillyBass.com">Virtual Big Mouth Billy Bass</a><br></font>
+<font size=1><a href="https://github.com/bedno/Virtual_Big_Mouth_Billy_Bass" target="github">https://github.com/bedno/Virtual_Big_Mouth_Billy_Bass</a><br></font>
 
 </br></center>
 </font></body>
