@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <meta name='keywords' content='Virtual Big Mouth Billy Bass'>
-<meta name="description" content="Virtual Big Mouth Billy Bass">
-<link rel='shortcut icon' href='https://bedno.com/g/vbmbb/vbmbb-icon.ico'>
+<meta name="description" content="Virtual Billy Bass">
+<link rel='shortcut icon' href='https://bedno.com/vbb/g/vbmbb-icon.ico'>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta property="og:title" content="VirtualBillyBass.com" />
 <meta property="og:description" content="Virtual Billy Bass : Text-to-speech talking animated character." />
-<meta property="og:image" content="https://bedno.com/g/vbmbb/virtualbillybass-620x325b.jpg" />
+<meta property="og:image" content="https://bedno.com/vbb/g/virtualbillybass-620x325b.jpg" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="http://VirtualBillyBass.com" />
 <meta property="og:site_name" content="VirtualBillyBass.com" />
 <head>
-<title>Virtual Big Mouthed Billy Bass</title>
+<title>Virtual Billy Bass</title>
 </head>
 <script>
 
@@ -23,15 +23,16 @@
 // Speech globals.
 var SpeechTxt = "";  var TailNextIdx = 0;
 var TimerMouth = null;  var TimerTail = null;  var SeqMouth = 0;  var SeqTail = 0;
-var SpeechVoices = null;  var SpeechHandle = null;
+var SpeechVoices = null;  var SpeechHandle = null;  var IsSpeaking = false;
+var ResizeTimer = null;
 
 // Weather globals.
 var WeatherForecastHandle = null;
 var WeatherCurrentSpoken = "";
 var WeatherForecastSpoken = "";
 var WeatherTimer = 0;
-var WeatherForecastURL = 'http://bedno.com/bike/d/w/wz-chicago-more.json';  // Cached from http://api.wunderground.com/api/<api_key>/forecast/pws/q/pws:KILCHICA173.json
-var WeatherCurrentURL = 'http://bedno.com/bike/d/w/wz-chicago-now.json';  // Cached from http://api.wunderground.com/api/<api_key>/conditions/pws/q/pws:KILCHICA173.json
+var WeatherForecastURL = 'https://bedno.com/bike/d/w/wz-chicago-more.json';  // Cached from http://api.wunderground.com/api/<api_key>/forecast/pws/q/pws:KILCHICA173.json
+var WeatherCurrentURL = 'https://bedno.com/bike/d/w/wz-chicago-now.json';  // Cached from http://api.wunderground.com/api/<api_key>/conditions/pws/q/pws:KILCHICA173.json
 
 // Global utilities.
 
@@ -45,26 +46,26 @@ function UpdMouth() {
   if (SeqMouth == 2) {
     SeqMouth = 1;
     if (TimerMouth) { clearTimeout(TimerMouth); }
-    TimerMouth = setTimeout('UpdMouth()',250);
+    TimerMouth = setTimeout('UpdMouth()',450);
   } else {
     SeqMouth = 0;
     MouthChar = '-';
   }
-  document.getElementById('ImgMouth').src = "https://bedno.com/g/vbmbb/mouth-"+SeqMouth.toString()+".png";
+  document.getElementById('ImgMouth').src = "https://bedno.com/vbb/g/mouth-o-"+SeqMouth.toString()+".jpg";
 }
 function ActMouth() {
   SeqMouth = 2;
-  document.getElementById('ImgMouth').src = "https://bedno.com/g/vbmbb/mouth-"+SeqMouth.toString()+".png";
+  document.getElementById('ImgMouth').src = "https://bedno.com/vbb/g/mouth-o-"+SeqMouth.toString()+".jpg";
   if (TimerMouth) { clearTimeout(TimerMouth); }
   TimerMouth = setTimeout('UpdMouth()',250);
 }
 function UpdTail() {
   SeqTail = 0;
-  document.getElementById('ImgTail').src = "https://bedno.com/g/vbmbb/tail-"+SeqTail.toString()+".png";
+  document.getElementById('ImgTail').src = "https://bedno.com/vbb/g/tail-o-"+SeqTail.toString()+".jpg";
 }
 function ActTail() {
   SeqTail = 1;
-  document.getElementById('ImgTail').src = "https://bedno.com/g/vbmbb/tail-"+SeqTail.toString()+".png";
+  document.getElementById('ImgTail').src = "https://bedno.com/vbb/g/tail-o-"+SeqTail.toString()+".jpg";
   if (TimerTail) { clearTimeout(TimerTail); }
   TimerTail = setTimeout('UpdTail()',400);
 }
@@ -74,6 +75,7 @@ function SpeechLog(SLin) {
   }
 }
 function SpeechDone(SpeechEvent) {
+  IsSpeaking = false;
   SpeechLog('Finished in '+(Math.round((SpeechEvent.elapsedTime/100))/10).toString()+" seconds.\n");
 }
 function SpeechWord(SpeechEvent) {
@@ -84,14 +86,19 @@ function SpeechWord(SpeechEvent) {
 function SpeechDo () {
   TailNextIdx = SpeechTxt.length/2;  if (TailNextIdx>22) { TailNextIdx = 12+Math.floor(Math.random()*18); }
   if ('speechSynthesis' in window) {  // If browser is speech capable
-    window.speechSynthesis.cancel();  // Cancel any existing speaking
-    SpeechHandle.text = SpeechTxt;
-    // Connect the completion callback.
-    SpeechHandle.onend = SpeechDone;
-    // Connect the word boundary callback.
-    SpeechHandle.onboundary = SpeechWord;
-    // Speak the passed phrase.
-    window.speechSynthesis.speak(SpeechHandle);
+    if (IsSpeaking) {
+      window.speechSynthesis.cancel();  // Cancel any existing speaking
+      IsSpeaking = false;
+    } else {
+      IsSpeaking = true;
+      SpeechHandle.text = SpeechTxt;
+      // Connect the completion callback.
+      SpeechHandle.onend = SpeechDone;
+      // Connect the word boundary callback.
+      SpeechHandle.onboundary = SpeechWord;
+      // Speak the passed phrase.
+      window.speechSynthesis.speak(SpeechHandle);
+    }
   } else {
     SpeechLog("This device does not support text to speech.\n");
   }
@@ -101,14 +108,15 @@ function SpeechSetup () {
   if ('speechSynthesis' in window) {  // If browser is speech capable
     SpeechVoices = window.speechSynthesis.getVoices();
     SpeechHandle = new SpeechSynthesisUtterance();  // Initialize a speech handle
-    SpeechHandle.voice = SpeechVoices[10];  // Select voice and other settings.
-    SpeechHandle.voiceURI = 'native';
-    SpeechHandle.volume = 1.0; // 0 to 1
-    SpeechHandle.rate = 1.0; // 0.1 to 10
-    SpeechHandle.pitch = 1.0; // 0 to 2
-    SpeechHandle.lang = 'en-US';
+    // Select voice and other settings.
+    // SpeechHandle.voice = SpeechVoices[10];
+    // SpeechHandle.voiceURI = 'native';
+    // SpeechHandle.volume = 1.0; // 0 to 1
+    // SpeechHandle.rate = 1.0; // 0.1 to 10
+    // SpeechHandle.pitch = 1.0; // 0 to 2
+    // SpeechHandle.lang = 'en-US';
   } else {
-    document.getElementById('NoSpeech').innerHTML = "<br><br><font color='red' size=3>SORRY, this browser can't speak.</font><br><br>";
+    document.getElementById('SpeechControls').innerHTML = "<br><br><font color='red' size=3>SORRY, this browser can't speak.</font><br><br>";
   }
 }
 
@@ -160,10 +168,22 @@ function SpeakFortune () {
 }
 
 function SpeakSong () {
-  SpeechTxt = "I wanna know, can you tell me?\n"+"I'd love to stay\n";
-  SpeechTxt += "Take me to the river, drop me in the water\n"+"Take me to the river, drop me in the water\n";
+  var Songs = new Array(
+     "I wanna know, can you tell me?\nI'd love to stay,\nTake me to the river, drop me in the water\nTake me to the river, drop me in the water.",
+     "Here's a little song I wrote,\nyou might want to sing it note for note,\ndon't worry, be happy,\ndon't worry be happy,\nwoooooohooooo don't worry,\nwoooooohooooo be happy,\nwoooooo hooooo don't worry be happy.",
+     "First I was afraid, I was petrified,\nThinking I could never live without you by my side,\nbut then I spent so many nights, thinking how you did me wrong...");
+  var SongIdx = Math.floor(Math.random()*Songs.length);
+  SpeechTxt = Songs[SongIdx];
   SpeechDo();
 }
+
+function SpeakFlirt () {
+  var Flirts = new Array( "Heeheehee, that tickles.\n",  "OK, OK, I'm awake, I'm awake.", "Forgive my forwardness, but are you seeing anyone?", "Yes, that feels good, don't stop." );
+  var FlirtIdx = Math.floor(Math.random()*Flirts.length);
+  SpeechTxt = Flirts[FlirtIdx];
+  SpeechDo();
+}
+
 
 // WEATHER handling.
 
@@ -210,7 +230,9 @@ function WeatherForecastReceive () {
       WeatherForecastSpoken = WeatherForecastSpoken.replace(/WIND/gi,"WEND");
       WeatherForecastSpoken = WeatherForecastSpoken.replace(/([^A-Z])\./gi,"$1; \n");
       SpeechLog('Weather Forecast received: '+WeatherForecastSpoken+"<br>\n");
-      if ( (WeatherCurrentSpoken.length>4) && (WeatherForecastSpoken.length>4) ) { SpeakWeather(); }
+      if ( (WeatherCurrentSpoken.length>4) && (WeatherForecastSpoken.length>4) && (document.getElementById('WeatherButton').style.fontStyle=="italic") ) {
+        document.getElementById('WeatherButton').style.fontStyle="normal";
+      }
     } catch (err) { SpeechLog('Weather Forecast received error: '+err+"<br>\n"); }
   }
 }
@@ -305,7 +327,9 @@ function WeatherCurrentReceive () {
   if (WeatherCurrentSpokenTmp.length > 4) {
     WeatherCurrentSpoken = WeatherCurrentSpokenTmp;
     SpeechLog('Weather Current received: '+WeatherForecastSpoken+"<br>\n");
-    if ( (WeatherCurrentSpoken.length>4) && (WeatherForecastSpoken.length>4) ) { SpeakWeather(); }
+    if ( (WeatherCurrentSpoken.length>4) && (WeatherForecastSpoken.length>4) && (document.getElementById('WeatherButton').style.fontStyle=="italic") ) {
+        document.getElementById('WeatherButton').style.fontStyle="normal";
+      }
   }
 }
 // Request weather current conditions on capable browsers.
@@ -342,29 +366,67 @@ function WeatherSync () {
   WeatherTimer = setTimeout('WeatherSync()', 10*60*1000);  // Refresh weather again every ten minutes.
 }
 
+function ResizeCels () {
+  var WinWidPhys = window.innerWidth && document.documentElement.clientWidth ? Math.min(window.innerWidth, document.documentElement.clientWidth) : window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName('body')[0].clientWidth;
+  var WinHgtPhys = window.innerHeight && document.documentElement.clientHeight ? Math.min(window.innerHeight, document.documentElement.clientHeight) : window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
+  WinWidPhys = Math.floor(WinWidPhys*0.9);
+  WinHgtPhys = Math.floor(WinHgtPhys*0.9)-32;
+  var ImgSize = Math.floor(Math.min(WinWidPhys,WinHgtPhys)/2);
+  SpeechLog('Image sized '+ImgSize.toString());
+  if ( (ImgSize>64) && (ImgSize<1200) ) {
+    document.getElementById('ImgMouth').style.width = ImgSize.toString()+'px';
+    document.getElementById('ImgMouth').style.height = ImgSize.toString()+'px';
+    document.getElementById('ImgTail').style.width = ImgSize.toString()+'px';
+    document.getElementById('ImgTail').style.height = ImgSize.toString()+'px';
+  } else {
+    document.getElementById('ImgMouth').style.width = '144px';
+    document.getElementById('ImgMouth').style.height = '144px';
+    document.getElementById('ImgTail').style.width = '144px';
+    document.getElementById('ImgTail').style.height = '144px';
+  }
+  window.onresize = function(event) {
+    if (ResizeTimer) { clearTimeout(ResizeTimer); }
+    ResizeTimer = setTimeout('ResizeCels()',1200);
+  }
+}
+
 // MAIN
 function DoStartup () {
   WeatherSync();
   SpeechSetup();
+  ResizeCels();
+}
+
+function ShowHelp () {
+  var HelpText = "";
+  if (document.getElementById('SpeechHelpDiv').style.visibility=='visible') {
+    document.getElementById('SpeechHelpDiv').innerHTML = "<br>";
+    document.getElementById('SpeechHelpDiv').style.visibility='hidden';
+  } else {
+    HelpText += "<font size=2><font size=3><br><br><a href='http://VirtualBillyBass.com'>VirtualBillyBass.com</a></font><br>\n";
+    HelpText += "(Virtual Big Mouth Billy Bass) is a web-based animated character\n";
+    HelpText += "modeled after an iconic <a href='https://en.wikipedia.org/wiki/Big_Mouth_Billy_Bass' target='wiki'>toy of the late 1990s</a>.\n";
+    HelpText += "This incarnation speaks Chicago weather and fortunes (whereas the original sang a few songs).<br>\n";
+    HelpText += "Created in January 2018 by <a href='http://AndrewBedno.com' target='ab'>Andrew Bedno</a> for fun and to experiment with advanced browser capabilities.\n";
+    HelpText += "Source code <a href='https://github.com/bedno/Virtual_Big_Mouth_Billy_Bass' target='github'>shared on GitHub</a>.</font><br>\n";
+    document.getElementById('SpeechHelpDiv').innerHTML = HelpText;
+    document.getElementById('SpeechHelpDiv').style.visibility='visible';
+  }
 }
 
 </script>
 <body onLoad="DoStartup();"><font face="Arial" size=2>
-<center>
-<br><font size=2><a href="http://VirtualBillyBass.com">VirtualBillyBass.com</a><br></font>
-<nobr><img id="ImgMouth" src="https://bedno.com/g/vbmbb/mouth-0.png" border=0 width="144" height="144"><img id="ImgTail" src="https://bedno.com/g/vbmbb/tail-0.png" border=0 width="144" height="144"></nobr><br>
 
-<div id="NoSpeech"></div>
-<button onClick="SpeakWeather();" style="color:#000000; background-color:orange; font-family:Helvetica, Arial; text-decoration:bold; font-size:12pt;">Weather</button> &nbsp;&nbsp;
-<button onClick="SpeakFortune();" style="color:#000000; background-color:orange; font-family:Helvetica, Arial; text-decoration:bold; font-size:12pt;">Fortune</button> &nbsp;&nbsp;
-<button onClick="SpeakSong();" style="color:#000000; background-color:orange; font-family:Helvetica, Arial; text-decoration:bold; font-size:12pt;">Song</button><br><br>
+<div id="SpeechHelpDiv" style="visibility:hidden; position:relative; display:inline-block; z-index:0;"><br></div>
 
-<font size=2><a href="http://VirtualBillyBass.com">Virtual Big Mouth Billy Bass</a><br></font>
-<font size=1><a href="https://github.com/bedno/Virtual_Big_Mouth_Billy_Bass" target="github">https://github.com/bedno/Virtual_Big_Mouth_Billy_Bass</a><br></font>
+<div id="SpeechCharacter" style="z-index:1; position:relative; left:0px; top:0px;"><br>
+<span onClick="SpeakFlirt();"><nobr><img id="ImgMouth" src="https://bedno.com/vbb/g/mouth-o-0.jpg" border=0 width="144" height="144" border=0><img id="ImgTail" src="https://bedno.com/vbb/g/tail-o-0.jpg" border=0 width="144" height="144" border=0></nobr></a></span></div>
 
-<div id="SpeechConsole" style="overflow:hidden; font-size:7pt; color:gray;"></div><br><br>
+<div id="SpeechControls" style="z-index:999; position:absolute; left:0px; top:0px; font-size:10pt;"><br><button onClick="SpeakWeather();" style="color:#000000; background-color:orange; font-family:Helvetica, Arial; text-decoration:bold; font-style:italic; font-size:12pt;" id="WeatherButton">Weather</button><button onClick="SpeakFortune();" style="color:#000000; background-color:orange; font-family:Helvetica, Arial; text-decoration:bold; font-size:12pt;">Fortune</button><button onClick="SpeakSong();" style="color:#000000; background-color:orange; font-family:Helvetica, Arial; text-decoration:bold; font-size:12pt;">Song</button><button onClick="ShowHelp();" style="color:#000000; background-color:orange; font-family:Helvetica, Arial; text-decoration:bold; font-size:12pt;">?</button></div>
 
-</br></center>
+<div id="SpeechConsole" style="overflow:hidden; font-size:7pt; color:gray;"><br><br></div><br><br>
+
+<br>
 </font></body>
 </html>
 
