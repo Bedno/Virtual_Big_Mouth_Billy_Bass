@@ -1,4 +1,4 @@
-Now running live at http://VirtualBillyBass.com
+Now running live at https://Bedno.com/vbb
 
 Web-based version of the iconic "Big Mouth Billy Bass" toy.  Speaks Chicago weather, fortunes, songs and more.
 
