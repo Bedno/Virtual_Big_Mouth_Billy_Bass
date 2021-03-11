@@ -1,6 +1,6 @@
 Now running live at https://Bedno.com/vbb
 
-Web-based version of the iconic "Big Mouth Billy Bass" toy.  Speaks Chicago weather, fortunes, songs and more.
+Web-based version of the iconic "Big Mouth Billy Bass" toy.  Speaks fortunes, banter, songs and more with synchronized animations.
 
 Evolved from the classic hacker project of modifying the toy to speak from external input, this version skips the hardware complexity by simulating the entire experience on any modern browser.
 
